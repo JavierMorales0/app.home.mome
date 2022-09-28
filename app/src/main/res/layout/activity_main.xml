@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/app_name_normal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="mo"
+        android:textFontWeight="300"
+        style="@style/TextAppearance.MaterialComponents.Headline2"
+        android:textAlignment="center"
+        android:layout_marginTop="50dp"
+        android:layout_centerHorizontal="true"
+        android:width="100dp"
+        />
+    <TextView
+        android:id="@+id/app_name_accent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ME"
+        android:textColor="@color/purple_500"
+        android:textFontWeight="500"
+        style="@style/TextAppearance.MaterialComponents.Headline2"
+        android:textAlignment="center"
+        android:layout_centerHorizontal="true"
+        android:width="100dp"
+        android:layout_below="@+id/app_name_normal"
+        />
+    <TextView
+        android:id="@+id/app_description"
+        style="@style/TextAppearance.MaterialComponents.Body2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="App para el control de gastos del hogar"
+        android:layout_below="@+id/app_name_accent"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/googleSignInBtn"
+        android:layout_below="@+id/app_description"
+        android:layout_centerHorizontal="true"
+        android:text="Iniciar sesión"
+        android:layout_marginTop="10dp"
+        app:icon="@drawable/google_16px"
+        app:iconPadding="12dp"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+        />
+
+
+</RelativeLayout>
