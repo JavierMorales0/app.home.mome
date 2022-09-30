@@ -4,13 +4,20 @@ import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
+import androidx.lifecycle.ViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.mome.homemome.databinding.ActivityMainBinding
+import com.mome.homemome.services.HomeApi
+import com.mome.homemome.services.models.LoginPost
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     // view binding
@@ -28,11 +35,11 @@ class MainActivity : AppCompatActivity() {
     // SHARED PREFERENCES
     private lateinit var sharedPreferences: SharedPreferences
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         // CONFIGURE SHARED PREFERENCES
         sharedPreferences = getSharedPreferences("HOME_MOME", MODE_PRIVATE)
 
@@ -42,7 +49,7 @@ class MainActivity : AppCompatActivity() {
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
-
+        // CHECK IF THE USER IS ALREADY LOGGED IN
         checkUser()
         // GOOGLE BUTTON SIGN IN, CLICK TO BEGIN GOOGLE SIGN IN
         binding.googleSignInBtn.setOnClickListener {
@@ -55,12 +62,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkUser() {
         // check if user is logged in or not
-        val googleIdToken = sharedPreferences.getString("token", "")
-        if(googleIdToken != ""){
-            // user is already logged in
-            Toast.makeText(this@MainActivity, "Logged In", Toast.LENGTH_SHORT).show()
-            //startActivity(Intent(this@MainActivity, ProfileActivity::class.java))
-            //finish()
+        val token = sharedPreferences.getString("token", "")
+        if(token != ""){
+            startActivity(Intent(this@MainActivity, DashboardActivity::class.java))
+            finish()
         }
 
     }
@@ -75,14 +80,33 @@ class MainActivity : AppCompatActivity() {
             try{
                 // Google sign in success
                 val account  = accountTask.getResult(ApiException::class.java)
-                val myEdit: SharedPreferences.Editor = sharedPreferences.edit();
-                myEdit.putString("token", account.idToken)
-                myEdit.commit()
-                checkUser()
+                CoroutineScope(Dispatchers.IO).launch{
+                    // FETCH THE API TO FINISH LOGIN
+                    val loginPost= LoginPost(account.email!!, account.idToken!!)
+                    val response = HomeApi.retrofitService.login(loginPost)
+                    Log.d(TAG, "onActivityResult: RESPONSE $response")
+                    saveTokenOnSharedPreferences(response.data.token)
+                    checkUser()
+                }
+                //checkUser()
             } catch(e: Exception){
                 // failed Google SignIn
                 Log.d(TAG, "onActivityResult: ${e.message}")
             }
         }
     }
+
+
+    private fun saveTokenOnSharedPreferences(token: String){
+        val editSharedPreferences: SharedPreferences.Editor = sharedPreferences.edit();
+        if (TextUtils.isEmpty(token)) return
+        editSharedPreferences.putString("token", token)
+        editSharedPreferences.commit()
+        return
+    }
+
+    private fun notify(message:String){
+        Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+    }
+
 }
