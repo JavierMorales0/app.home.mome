@@ -12,6 +12,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.mome.homemome.databinding.ActivityDashboardBinding
+import com.mome.homemome.services.HomeApi
+import com.mome.homemome.services.models.AuthResponse
+import com.mome.homemome.services.models.UserProfileResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class DashboardActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDashboardBinding
@@ -35,7 +41,6 @@ class DashboardActivity : AppCompatActivity() {
         // CONFIGURE SHARED PREFERENCES
         sharedPreferences = getSharedPreferences("HOME_MOME", MODE_PRIVATE)
 
-
         // CONFIGURE THE  GOOGLE SIGN IN
         val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(DashboardActivity.ID_CLIENT)
@@ -44,6 +49,8 @@ class DashboardActivity : AppCompatActivity() {
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
         
     }
+
+
 
     private fun logout(){
         deleteTokenOnSharedPreferences()
@@ -54,7 +61,7 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun deleteTokenOnSharedPreferences(){
         Log.d(TAG, "deleteTokenOnSharedPreferences: Deleting token")
-        sharedPreferences.edit().remove("token").commit()
+        sharedPreferences.edit().remove("tokenId").commit()
         return
     }
 
@@ -74,6 +81,9 @@ class DashboardActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val action = item.itemId
+        if (action == R.id.action_profile){
+            startActivity(Intent(this@DashboardActivity, ProfileActivity::class.java))
+        }
         if (action == R.id.action_menu_logout) {
             logout()
             return true

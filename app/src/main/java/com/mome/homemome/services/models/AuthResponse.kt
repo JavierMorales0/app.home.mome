@@ -1,8 +1,8 @@
 package com.mome.homemome.services.models
 
-data class LoginResponse(
+data class AuthResponse(
     val context: String,
-    val data: Login,
+    val data: Credential,
     val date: String,
     val origin: String,
     val status: String,

@@ -1,7 +1,5 @@
 package com.mome.homemome.services.models
 
-data class LoginPost(
-    val email: String,
+data class Credential(
     val tokenId: String
 )
-

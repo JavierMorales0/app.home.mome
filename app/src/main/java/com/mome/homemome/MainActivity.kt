@@ -7,17 +7,17 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
-import androidx.lifecycle.ViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.mome.homemome.databinding.ActivityMainBinding
 import com.mome.homemome.services.HomeApi
-import com.mome.homemome.services.models.LoginPost
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.mome.homemome.services.models.Credential
+import com.mome.homemome.services.models.AuthResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
     // view binding
@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkUser() {
         // check if user is logged in or not
-        val token = sharedPreferences.getString("token", "")
+        val token = sharedPreferences.getString("tokenId", "")
         if(token != ""){
             startActivity(Intent(this@MainActivity, DashboardActivity::class.java))
             finish()
@@ -80,15 +80,33 @@ class MainActivity : AppCompatActivity() {
             try{
                 // Google sign in success
                 val account  = accountTask.getResult(ApiException::class.java)
-                CoroutineScope(Dispatchers.IO).launch{
-                    // FETCH THE API TO FINISH LOGIN
-                    val loginPost= LoginPost(account.email!!, account.idToken!!)
-                    val response = HomeApi.retrofitService.login(loginPost)
-                    Log.d(TAG, "onActivityResult: RESPONSE $response")
-                    saveTokenOnSharedPreferences(response.data.token)
-                    checkUser()
-                }
-                //checkUser()
+                // FETCH THE API TO FINISH LOGIN
+                val credential = Credential(account.idToken!!)
+                // INSTANCE THE LOGIN METHOD OF THE API
+                val _API : Call<AuthResponse> = HomeApi.retrofitService.auth(credential);
+                // PROMISE OF THE API RESPONSE
+                _API.enqueue(object : Callback<AuthResponse>
+                {
+                    override fun onResponse(
+                        call: Call<AuthResponse>,
+                        response: Response<AuthResponse>
+                    ) {
+                        // SAVE THE RESPONSE
+                        val response = response.body()
+                        // SAVE THE TOKEN ON SHARED PREFERENCES
+                        saveTokenOnSharedPreferences(response!!.data.tokenId)
+                        // CHECK USER STATUS
+                        checkUser()
+                    }
+
+                    override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
+                        // SHOW ERROR
+                        Log.d(TAG, "onFailure: ${t.message}")
+                        // NOTIFY ERROR
+                        notify("Error al iniciar sesión")
+                    }
+
+                })
             } catch(e: Exception){
                 // failed Google SignIn
                 Log.d(TAG, "onActivityResult: ${e.message}")
@@ -100,7 +118,7 @@ class MainActivity : AppCompatActivity() {
     private fun saveTokenOnSharedPreferences(token: String){
         val editSharedPreferences: SharedPreferences.Editor = sharedPreferences.edit();
         if (TextUtils.isEmpty(token)) return
-        editSharedPreferences.putString("token", token)
+        editSharedPreferences.putString("tokenId", token)
         editSharedPreferences.commit()
         return
     }

@@ -1,10 +1,14 @@
 package com.mome.homemome.services
 
-import com.mome.homemome.services.models.LoginPost
-import com.mome.homemome.services.models.LoginResponse
+import com.mome.homemome.services.models.Credential
+import com.mome.homemome.services.models.AuthResponse
+import com.mome.homemome.services.models.UserProfileResponse
+import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 
 private const val BASE_URL =
@@ -17,8 +21,10 @@ private val retrofit = Retrofit.Builder()
 
 interface HomeApiService{
     @POST("auth/login")
-    suspend fun login(@Body loginPost: LoginPost): LoginResponse
+    fun auth(@Body credentials: Credential): Call<AuthResponse>
 
+    @GET("users/profile")
+    fun getProfile(@Header("Authorization") tokenId : String):Call<UserProfileResponse>
 }
 
 object HomeApi{
